@@ -29,11 +29,24 @@ motor:
     nota: >
       El mínimo de 50°C (122°F) es una condición a cumplir ANTES de aplicar alta
       potencia (prueba de magnetos / despegue), no un mínimo continuo desde el
-      arranque. Durante la puesta en marcha y el rodaje la temperatura sube
-      gradualmente — evaluarla como "fuera de límite" en ese tramo genera falsos
-      positivos. Ver memory/fases-de-vuelo.md: el análisis de temperaturas de
-      operación debe arrancar desde la prueba de magnetos en adelante, no desde
-      el encendido.
+      arranque — durante la puesta en marcha y el rodaje la temperatura sube
+      gradualmente y eso es normal. "Desde la prueba de magnetos" es difícil de
+      delimitar con precisión en la telemetría; en su lugar se usa un proxy
+      operacional definido por el constructor (ver `regla_alta_potencia_sin_temp_operativa`
+      abajo) y [[fases-de-vuelo]].
+
+    regla_alta_potencia_sin_temp_operativa:
+      descripcion: >
+        Alerta si se aplica alta potencia (RPM por encima del umbral) sin haber
+        alcanzado la temperatura de operación normal del aceite. Reemplaza la
+        idea de "detectar la prueba de magnetos" por una condición simple y
+        verificable directamente en el log.
+      umbral_rpm: 3000
+      umbral_temp_operativa: 194   # 90 °C — normal_min de la tabla de arriba
+      campo_csv_rpm: "RPM"
+      campo_csv_temp: "Oil Temp (deg F)"
+      condicion: "RPM > umbral_rpm AND Oil Temp (deg F) < umbral_temp_operativa"
+      fuente: "Regla operacional definida por el constructor (Hernán Sans), no extraída de manual — proxy práctico para 'desde la prueba de magnetos en adelante'"
 
   temp_refrigerante:
     campo_csv: "Coolant Temp (deg F)"

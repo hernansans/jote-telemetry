@@ -36,6 +36,37 @@ def load_limits(path: str) -> dict:
         return yaml.safe_load(f)
 
 
+def _check_alta_potencia_sin_temp_operativa(nombre: str, regla: dict, df: pd.DataFrame) -> list[Excursion]:
+    """Regla compuesta: alerta si RPM supera el umbral de "alta potencia" antes
+    de que el aceite alcance su temperatura de operación normal.
+
+    Es un proxy operacional definido por el constructor para "desde la prueba
+    de magnetos en adelante" — ver docs/limites.yaml -> regla_alta_potencia_sin_temp_operativa
+    y memory/fases-de-vuelo.md.
+    """
+    campo_rpm = regla.get("campo_csv_rpm")
+    campo_temp = regla.get("campo_csv_temp")
+    if campo_rpm not in df.columns or campo_temp not in df.columns:
+        return []
+
+    rpm = pd.to_numeric(df[campo_rpm], errors="coerce")
+    temp = pd.to_numeric(df[campo_temp], errors="coerce")
+    mask = (rpm > regla["umbral_rpm"]) & (temp < regla["umbral_temp_operativa"])
+    filas = df[mask]
+    if filas.empty:
+        return []
+
+    return [Excursion(
+        parametro=nombre,
+        campo_csv=f"{campo_rpm} + {campo_temp}",
+        tipo="alta_potencia_sin_temperatura_operativa",
+        limite=regla["umbral_temp_operativa"],
+        unidad="",
+        fuente=regla.get("fuente", ""),
+        filas=filas,
+    )]
+
+
 def _check_param(nombre: str, spec: dict, df: pd.DataFrame) -> tuple[list[Excursion], bool]:
     """Evalúa un parámetro. Devuelve (excursiones, tiene_limites_simples)."""
     limites = spec.get("limites") or {}
@@ -83,6 +114,14 @@ def analizar(df: pd.DataFrame, limites_yaml: dict) -> ResultadoAnalisis:
         for nombre, spec in parametros.items():
             if not isinstance(spec, dict):
                 continue
+
+            regla_alta_potencia = spec.get("regla_alta_potencia_sin_temp_operativa")
+            if regla_alta_potencia:
+                resultado.excursiones.extend(
+                    _check_alta_potencia_sin_temp_operativa(
+                        f"{categoria}.{nombre}.alta_potencia_sin_temp_operativa", regla_alta_potencia, df
+                    )
+                )
 
             campo = spec.get("campo_csv")
             campos = campo if isinstance(campo, list) else [campo]

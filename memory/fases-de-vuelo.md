@@ -21,11 +21,19 @@ calentando, se va moviendo por el rodaje, lo importante de la temperatura de ope
 es desde la prueba de magnetos en adelante". Evaluar el mínimo como límite continuo
 desde el arranque genera falsos positivos sistemáticos en cada vuelo.
 
-**How to apply:** en `docs/limites.yaml` y en el motor de comparación
-([[convenciones-limites]]), el mínimo de temperatura de aceite/refrigerante se trata
-como una condición a verificar desde la prueba de magnetos en adelante (gate previo a
-alta potencia), no como un mínimo absoluto de todo el log. Falta definir cómo detectar
-ese punto en la telemetría (candidato: primer ascenso sostenido de RPM por encima del
-ralentí hacia el rango de prueba de magnetos, ~1700-1800 RPM según Manual de Ensayos
-Sec.5.3) — quedará resuelto cuando se implemente la lógica de fases de vuelo en el
-motor de comparación.
+**Resuelto — proxy operacional en vez de detectar la fase exacta:**
+Hernán mismo señaló que "desde la prueba de magnetos" es difícil de delimitar con
+precisión en la telemetría, y propuso un proxy simple y verificable: alertar cuando
+RPM > 3000 (alta potencia) Y la temperatura de aceite sigue por debajo del rango
+operativo normal (90°C / 194°F). Esto evita tener que detectar la fase exacta —
+si el motor recibe alta potencia sin haber calentado, hay alerta; si nunca se cruza
+ese umbral de RPM con temperatura baja, no la hay (calentamiento normal en rodaje).
+
+**How to apply:** implementado como `regla_alta_potencia_sin_temp_operativa` en
+`docs/limites.yaml` (bajo `motor.temp_aceite`) y evaluado en
+`src/limits_engine._check_alta_potencia_sin_temp_operativa`. Es una regla compuesta
+de dos columnas (RPM + temperatura), no un límite simple de una sola variable —
+documentar cualquier regla similar (por fase de vuelo, por condición compuesta) con
+el mismo patrón: umbrales explícitos + condición declarada en YAML + función dedicada
+en el motor, citando que es "regla operacional definida por el constructor" cuando no
+proviene directamente de un manual.

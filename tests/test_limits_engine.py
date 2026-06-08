@@ -80,3 +80,56 @@ def test_load_limits_real_yaml_no_lanza_y_tiene_categorias_esperadas():
     assert "motor" in limites
     assert "vuelo" in limites
     assert "avionica" in limites
+
+
+def test_alerta_alta_potencia_sin_temp_operativa_se_dispara():
+    limites_yaml = {
+        "motor": {
+            "temp_aceite": {
+                "campo_csv": "Oil Temp (deg F)",
+                "limites": {},
+                "regla_alta_potencia_sin_temp_operativa": {
+                    "umbral_rpm": 3000,
+                    "umbral_temp_operativa": 194,
+                    "campo_csv_rpm": "RPM",
+                    "campo_csv_temp": "Oil Temp (deg F)",
+                    "fuente": "fixture",
+                },
+            }
+        }
+    }
+    df = pd.DataFrame({
+        "RPM": [1200, 1800, 3500, 4000],
+        "Oil Temp (deg F)": [120, 150, 180, 200],
+    })
+    resultado = analizar(df, limites_yaml)
+    excs = [e for e in resultado.excursiones if e.tipo == "alta_potencia_sin_temperatura_operativa"]
+    assert len(excs) == 1
+    # solo la fila con RPM 3500 cumple RPM>3000 y temp<194; la de 4000/200 ya está en rango operativo
+    assert len(excs[0].filas) == 1
+    assert excs[0].filas.iloc[0]["RPM"] == 3500
+
+
+def test_sin_alerta_alta_potencia_si_temperatura_ya_operativa():
+    limites_yaml = {
+        "motor": {
+            "temp_aceite": {
+                "campo_csv": "Oil Temp (deg F)",
+                "limites": {},
+                "regla_alta_potencia_sin_temp_operativa": {
+                    "umbral_rpm": 3000,
+                    "umbral_temp_operativa": 194,
+                    "campo_csv_rpm": "RPM",
+                    "campo_csv_temp": "Oil Temp (deg F)",
+                    "fuente": "fixture",
+                },
+            }
+        }
+    }
+    df = pd.DataFrame({
+        "RPM": [1200, 3500, 4000],
+        "Oil Temp (deg F)": [120, 200, 205],
+    })
+    resultado = analizar(df, limites_yaml)
+    excs = [e for e in resultado.excursiones if e.tipo == "alta_potencia_sin_temperatura_operativa"]
+    assert excs == []
