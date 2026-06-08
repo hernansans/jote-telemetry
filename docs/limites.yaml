@@ -21,11 +21,19 @@ motor:
     campo_csv: "Oil Temp (deg F)"
     unidad: "°F"
     limites:
-      min: 122        # 50 °C
+      min_para_alta_potencia: 122   # 50 °C — gate previo a despegue/alta potencia, NO un mínimo continuo
       normal_min: 194 # 90 °C
       normal_max: 230 # 110 °C
       max: 266        # 130 °C
     fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valores originales en °C: mín. 50, normal 90-110, máx. 130)"
+    nota: >
+      El mínimo de 50°C (122°F) es una condición a cumplir ANTES de aplicar alta
+      potencia (prueba de magnetos / despegue), no un mínimo continuo desde el
+      arranque. Durante la puesta en marcha y el rodaje la temperatura sube
+      gradualmente — evaluarla como "fuera de límite" en ese tramo genera falsos
+      positivos. Ver memory/fases-de-vuelo.md: el análisis de temperaturas de
+      operación debe arrancar desde la prueba de magnetos en adelante, no desde
+      el encendido.
 
   temp_refrigerante:
     campo_csv: "Coolant Temp (deg F)"
