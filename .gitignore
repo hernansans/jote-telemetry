@@ -8,3 +8,7 @@ venv/
 
 # logs de vuelo crudos (datos del avión, no van al repo)
 data/raw/*.csv
+
+# fixtures de log reales (datos de vuelo, no van al repo público)
+tests/fixtures/*
+!tests/fixtures/log_sintetico_ejemplo.csv

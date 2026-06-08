@@ -3,3 +3,4 @@
 Índice de memorias. Cada línea apunta a un archivo con el detalle.
 
 - [Convenciones de límites](convenciones-limites.md) — cómo se documentan límites en docs/limites.yaml
+- [Límites extraídos de los manuales](limites-extraidos.md) — qué ya está completo en limites.yaml y qué queda pendiente/abierto
