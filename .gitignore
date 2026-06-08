@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# logs de vuelo crudos (datos del avión, no van al repo)
+data/raw/*.csv

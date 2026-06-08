@@ -1,0 +1,134 @@
+# Límites mandatorios — fuente de verdad para el motor de comparación
+#
+# Cada entrada DEBE citar manual + edición/revisión + página/sección.
+# Este archivo arranca como esquema/placeholder: se completa a medida que se
+# extraen los valores reales de los manuales (Rotax OM 912 Ed.4, Manual JOTE rev.1,
+# G3X Touch Pilot's Guide, Manual de Ensayos en Vuelo).
+#
+# Estructura de cada parámetro:
+#   campo_csv:        nombre de la columna esperada en el log del GDU 460
+#   unidad:           unidad de medida
+#   limites:          min / max / max_continuo / max_transitorio (lo que aplique)
+#   fuente:           manual, edición/revisión, página o sección
+
+motor:
+  rpm:
+    campo_csv: null          # TODO: completar con nombre real de columna del CSV
+    unidad: rpm
+    limites:
+      max_continuo: null
+      max_transitorio: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  temp_aceite:
+    campo_csv: null
+    unidad: "°C"
+    limites:
+      min: null
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  temp_refrigerante:
+    campo_csv: null
+    unidad: "°C"
+    limites:
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  presion_aceite:
+    campo_csv: null
+    unidad: "bar"
+    limites:
+      min: null
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  egt:
+    campo_csv: null          # por cilindro — definir convención de nombres (egt_1..egt_4)
+    unidad: "°C"
+    limites:
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  presion_combustible:
+    campo_csv: null
+    unidad: "kPa"
+    limites:
+      min: null
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  flujo_combustible:
+    campo_csv: null
+    unidad: "L/h"
+    limites:
+      max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  alternador:
+    campo_csv_voltaje: null
+    campo_csv_amperaje: null
+    unidad_voltaje: "V"
+    unidad_amperaje: "A"
+    limites:
+      voltaje_min: null
+      voltaje_max: null
+      amperaje_max: null
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+
+  map:
+    campo_csv: null
+    unidad: "kPa"
+    nota: "comparar contra curva teórica del manual, no contra un único límite"
+    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección (curva MAP vs RPM)"
+
+vuelo:
+  ias:
+    campo_csv: null
+    unidad: kt
+    limites:
+      vne: null
+      vno: null
+      va: null
+    fuente: "Manual JOTE rev.1 — TODO: página/sección"
+
+  velocidad_suelo:
+    campo_csv: null
+    unidad: kt
+    limites: {}
+    fuente: "registro informativo — sin límite mandatorio"
+
+  agl:
+    campo_csv_base: null     # Pressure Altitude — ver docs/aerodromo.md para el cálculo
+    unidad: ft
+    nota: "calculado, no es columna directa del CSV — ver docs/aerodromo.md"
+
+  tasa_vertical:
+    campo_csv: null
+    unidad: "ft/min"
+    limites: {}
+    fuente: "registro informativo"
+
+  vlof:
+    campo_csv: null
+    unidad: kt
+    contexto: "ensayos de carrera en pista"
+    fuente: "Manual de Ensayos en Vuelo — TODO: página/sección"
+
+avionica:
+  alertas_cas:
+    campo_csv: null
+    nota: "registrar segundo a segundo, acumular por vuelo"
+    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
+
+  hdg_miscomp:
+    campo_csv: null
+    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
+
+  diferencia_altimetrica_g5_g3x:
+    campo_csv_g5: null
+    campo_csv_g3x: null
+    unidad: ft
+    limites:
+      max_diferencia: null
+    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
