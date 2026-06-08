@@ -1,134 +1,153 @@
 # Límites mandatorios — fuente de verdad para el motor de comparación
 #
-# Cada entrada DEBE citar manual + edición/revisión + página/sección.
-# Este archivo arranca como esquema/placeholder: se completa a medida que se
-# extraen los valores reales de los manuales (Rotax OM 912 Ed.4, Manual JOTE rev.1,
-# G3X Touch Pilot's Guide, Manual de Ensayos en Vuelo).
-#
-# Estructura de cada parámetro:
-#   campo_csv:        nombre de la columna esperada en el log del GDU 460
-#   unidad:           unidad de medida
-#   limites:          min / max / max_continuo / max_transitorio (lo que aplique)
-#   fuente:           manual, edición/revisión, página o sección
+# Cada entrada cita manual + edición/revisión + página/sección (ver `fuente`).
+# `campo_csv` usa el nombre exacto de columna del log GDU 460 (encabezado fila 2 del CSV).
+# Los límites se expresan en la unidad que reporta el CSV para comparar directo;
+# entre paréntesis en `fuente_valor_original` se deja el valor tal como figura en el
+# manual de origen (suele estar en unidades métricas).
 
 motor:
   rpm:
-    campo_csv: null          # TODO: completar con nombre real de columna del CSV
+    campo_csv: "RPM"
     unidad: rpm
     limites:
-      max_continuo: null
-      max_transitorio: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      ralenti_min: 1400
+      max_continuo: 5500
+      max_despegue_transitorio: 5800   # admisible máx. 5 minutos
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-5"
+    nota: "Manual JOTE rev.1 Sec.2.8 reproduce estos mismos valores; Manual de Ensayos Sec.5.3 indica ralentí real 1750-1800 RPM (más alto que el mínimo del manual del motor)"
 
   temp_aceite:
-    campo_csv: null
-    unidad: "°C"
+    campo_csv: "Oil Temp (deg F)"
+    unidad: "°F"
     limites:
-      min: null
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      min: 122        # 50 °C
+      normal_min: 194 # 90 °C
+      normal_max: 230 # 110 °C
+      max: 266        # 130 °C
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valores originales en °C: mín. 50, normal 90-110, máx. 130)"
 
   temp_refrigerante:
-    campo_csv: null
-    unidad: "°C"
+    campo_csv: "Coolant Temp (deg F)"
+    unidad: "°F"
     limites:
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      max: 248        # 120 °C — motor con sufijo -01 (912 ULS2-01), refrigerante convencional
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valor original: máx. 120 °C, tabla 'Conventional coolant — Applicable for engine S/N with Suffix -01')"
 
   presion_aceite:
-    campo_csv: null
-    unidad: "bar"
+    campo_csv: "Oil Press (PSI)"
+    unidad: psi
     limites:
-      min: null
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      min_por_debajo_3500rpm: 11.6
+      normal_por_encima_3500rpm_min: 29
+      normal_por_encima_3500rpm_max: 72.5
+      max_arranque_frio: 101.5
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-5 (valores originales en bar: mín. 0.8 <3500rpm, normal 2.0-5.0 >3500rpm, máx. 7 admisible solo en arranque en frío)"
 
   egt:
-    campo_csv: null          # por cilindro — definir convención de nombres (egt_1..egt_4)
-    unidad: "°C"
+    campo_csv: ["EGT1 (deg F)", "EGT2 (deg F)", "EGT3 (deg F)", "EGT4 (deg F)"]
+    unidad: "°F"
     limites:
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      max: 1616       # 880 °C
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valor original: máx. 880 °C)"
 
   presion_combustible:
-    campo_csv: null
-    unidad: "kPa"
+    campo_csv: "Fuel Press (PSI)"
+    unidad: psi
     limites:
-      min: null
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+      min: 2.2
+      max: 5.8
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-7 (valores originales en bar: mín. 0.15, máx. 0.4); Manual JOTE rev.1 Sec.2.8 reproduce 2.2-5.8 psi"
 
   flujo_combustible:
-    campo_csv: null
-    unidad: "L/h"
-    limites:
-      max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+    campo_csv: "Fuel Flow (gal/hour)"
+    unidad: "gal/h"
+    limites: {}
+    nota: "registro informativo — sin límite mandatorio publicado; usar para tendencias y consumo específico (Manual de Ensayos PERF08)"
 
   alternador:
-    campo_csv_voltaje: null
-    campo_csv_amperaje: null
+    campo_csv_voltaje: "Volts"
+    campo_csv_amperaje: "Alt Amps"
     unidad_voltaje: "V"
     unidad_amperaje: "A"
-    limites:
-      voltaje_min: null
-      voltaje_max: null
-      amperaje_max: null
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección"
+    limites: {}
+    nota: "Manual JOTE rev.1 Sec.2.10 indica monitorear avisos VP-X y amperajes asociados, sin publicar límites numéricos de voltaje/amperaje — registrar para tendencias y comparar contra avisos CAS/VP-X del vuelo"
+    fuente: "Manual JOTE rev.1, Sección 2.10 — Limitaciones eléctricas y VP-X, pág. 13"
 
   map:
-    campo_csv: null
-    unidad: "kPa"
-    nota: "comparar contra curva teórica del manual, no contra un único límite"
-    fuente: "Rotax OM 912 Ed.4 — TODO: página/sección (curva MAP vs RPM)"
+    campo_csv: "Manifold Press (inch Hg)"
+    unidad: "inch Hg"
+    nota: "comparar contra curva teórica MAP vs RPM del manual del motor, no contra un único límite — pendiente de extracción de la curva (Rotax OM 912, sección de performance)"
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1 — TODO: localizar curva MAP vs RPM"
 
 vuelo:
   ias:
-    campo_csv: null
+    campo_csv: "Indicated Airspeed (kt)"
     unidad: kt
     limites:
-      vne: null
-      vno: null
-      va: null
-    fuente: "Manual JOTE rev.1 — TODO: página/sección"
+      vne: 113
+      vno: 91
+      va: 84
+      vfe: 65
+      vs: 34
+      vso: 28
+    fuente: "Manual JOTE rev.1, Sección 2.2 — Limitaciones de velocidad (KIAS), pág. 11"
 
   velocidad_suelo:
-    campo_csv: null
+    campo_csv: "GPS Ground Speed (kt)"
     unidad: kt
     limites: {}
-    fuente: "registro informativo — sin límite mandatorio"
+    nota: "registro informativo — sin límite mandatorio; útil para comparar contra IAS/TAS y viento"
 
   agl:
-    campo_csv_base: null     # Pressure Altitude — ver docs/aerodromo.md para el cálculo
+    campo_csv_base: "Pressure Altitude (ft)"
+    campo_csv_g3x_agl: "Height Above Ground (ft)"
     unidad: ft
-    nota: "calculado, no es columna directa del CSV — ver docs/aerodromo.md"
+    nota: >
+      AGL real = Pressure Altitude − elevación del aeródromo (1.748 ft), ajustada por
+      cabecera en uso (desnivel de 48 ft) — ver docs/aerodromo.md. No usar la columna
+      'Height Above Ground (ft)' del G3X (deriva de altitud GPS/radar) como referencia
+      del análisis; se registra solo para comparación/control cruzado.
 
   tasa_vertical:
-    campo_csv: null
+    campo_csv: "Vertical Speed (ft/min)"
     unidad: "ft/min"
     limites: {}
-    fuente: "registro informativo"
+    nota: "registro informativo — usar para tendencias de ascenso/descenso (PERF03/PERF05)"
 
   vlof:
-    campo_csv: null
+    campo_csv: "Indicated Airspeed (kt)"
     unidad: kt
-    contexto: "ensayos de carrera en pista"
-    fuente: "Manual de Ensayos en Vuelo — TODO: página/sección"
+    contexto: >
+      Determinación de VLOF (Fase 02 / PERF01): velocidad mínima de separación del suelo,
+      medida en "saltos de pulga" tras rodajes progresivos a ≈1.05/1.10/1.15 × Vs1 estimada.
+      Se requieren ≥3 valores consistentes de KIAS en separación. Vr provisional = VLOF +3 a +5 kt.
+    fuente: "Manual de Ensayos en Vuelo JOTE v3, Sección 8.4/9.2 (PERF01), pág. 15 y 18"
 
 avionica:
   alertas_cas:
-    campo_csv: null
-    nota: "registrar segundo a segundo, acumular por vuelo"
-    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
+    campo_csv: "CAS Alert"
+    nota: "texto crudo del log, segundo a segundo — acumular ocurrencias y duración por vuelo, agrupar por criticidad (warning/caution/advisory)"
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 3.7 / 'CAS Messages', pág. ~349 (PDF p.635)"
 
   hdg_miscomp:
-    campo_csv: null
-    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
+    campo_csv: "AHRS/Mag 1 Status"
+    nota: >
+      El G3X anuncia discrepancias entre unidades ADAHRS/SFD como mensaje CAS 'MISCOMP'
+      (miscompare) en la Comparator Window; el umbral numérico de disparo se define en
+      configuración de instalación y no está publicado como valor único en el Pilot's Guide.
+      Tratamiento: registrar cada ocurrencia del mensaje CAS de miscompare y su duración,
+      no como cruce de un umbral numérico fijo.
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 'ADAHRS LRU Comparison Alerts' / 'SFD Comparison Alerts', pág. ~375-376 (PDF p.401-402)"
 
   diferencia_altimetrica_g5_g3x:
-    campo_csv_g5: null
-    campo_csv_g3x: null
+    campo_csv_g3x: "Pressure Altitude (ft)"
+    campo_csv_g5: null   # TODO: el log de PFD1 no trae canal del G5 — confirmar si se exporta en log separado o vía RS-232/comparator
     unidad: ft
-    limites:
-      max_diferencia: null
-    fuente: "G3X Touch Pilot's Guide — TODO: página/sección"
+    limites: {}
+    nota: >
+      Mismo mecanismo que hdg_miscomp: el G3X compara fuentes redundantes y anuncia
+      'MISCOMP'/'NO COMP' sin publicar un umbral numérico único en el Pilot's Guide.
+      Pendiente: confirmar si el dato de altitud del G5 standby queda registrado en el
+      log del GDU 460 o si debe tomarse de otra fuente para la comparación.
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 'SFD Comparison Alerts', pág. ~375-376 (PDF p.401-402)"
