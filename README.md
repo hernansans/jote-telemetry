@@ -37,10 +37,23 @@ Detectar anomalías antes de que se conviertan en problemas, documentar tendenci
 largo del programa de ensayos, y generar reportes técnicos listos para taller — con datos
 y comparaciones, **sin diagnósticos** (esa parte es trabajo de los técnicos).
 
+## Setup rápido (cualquier PC)
+
+```bash
+git clone https://github.com/hernansans/jote-telemetry.git
+cd jote-telemetry
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+pytest -q                       # tiene que mostrar todos los tests en verde
+```
+
+Los logs CSV del GDU 460 van en `tests/fixtures/` (gitignoreados, no se suben al repo).
+
 ## Roadmap
 
-- [ ] Parser de CSV del GDU 460
-- [ ] Motor de comparación contra límites (`docs/limites.yaml`)
+- [x] Parser de CSV del GDU 460
+- [x] Motor de comparación contra límites (`docs/limites.yaml`)
 - [ ] Generador de reportes Markdown por vuelo
 - [ ] Comparación entre vuelos / tendencias
 - [ ] Widget web de carga (segunda etapa)
