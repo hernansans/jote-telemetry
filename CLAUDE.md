@@ -27,3 +27,16 @@ Garmin G3X Touch), en ensayos en vuelo en Aeródromo Alta Gracia, Córdoba.
 - `memory/` — qué aprendimos vuelo a vuelo, decisiones de diseño
 - `tests/` — casos con CSVs de ejemplo
 - `reports/` — reportes generados, uno por vuelo
+- `overlay/` — HUD de video transparente (ProRes 4444 alpha) generado desde el mismo CSV
+
+## Módulo overlay
+
+El módulo `overlay/` es un fork de flighthud con widgets y templates custom para el JOTE.
+Antes de trabajar en él, leé `overlay/README.md` para el setup y comandos de render.
+
+**Reglas clave del overlay:**
+- Todo output (frames, .mov, logs) va a disco A: — nunca al repo ni a C:
+- Los CSV de telemetría son datos privados — no se commitean
+- Render completo: `-j 6` workers (más causa MemoryError por page file en C:)
+- Templates activos: `jote_cockpit` (PFD completo), `jote_EIS` (EIS + IAS + VSI)
+- Widgets custom en `overlay/src/flighthud/widgets/eis.py`: `eis_panel`, `dial_gauge`
