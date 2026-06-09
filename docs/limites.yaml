@@ -21,11 +21,32 @@ motor:
     campo_csv: "Oil Temp (deg F)"
     unidad: "°F"
     limites:
-      min: 122        # 50 °C
+      min_para_alta_potencia: 122   # 50 °C — gate previo a despegue/alta potencia, NO un mínimo continuo
       normal_min: 194 # 90 °C
       normal_max: 230 # 110 °C
       max: 266        # 130 °C
     fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valores originales en °C: mín. 50, normal 90-110, máx. 130)"
+    nota: >
+      El mínimo de 50°C (122°F) es una condición a cumplir ANTES de aplicar alta
+      potencia (prueba de magnetos / despegue), no un mínimo continuo desde el
+      arranque — durante la puesta en marcha y el rodaje la temperatura sube
+      gradualmente y eso es normal. "Desde la prueba de magnetos" es difícil de
+      delimitar con precisión en la telemetría; en su lugar se usa un proxy
+      operacional definido por el constructor (ver `regla_alta_potencia_sin_temp_operativa`
+      abajo) y [[fases-de-vuelo]].
+
+    regla_alta_potencia_sin_temp_operativa:
+      descripcion: >
+        Alerta si se aplica alta potencia (RPM por encima del umbral) sin haber
+        alcanzado la temperatura de operación normal del aceite. Reemplaza la
+        idea de "detectar la prueba de magnetos" por una condición simple y
+        verificable directamente en el log.
+      umbral_rpm: 3000
+      umbral_temp_operativa: 194   # 90 °C — normal_min de la tabla de arriba
+      campo_csv_rpm: "RPM"
+      campo_csv_temp: "Oil Temp (deg F)"
+      condicion: "RPM > umbral_rpm AND Oil Temp (deg F) < umbral_temp_operativa"
+      fuente: "Regla operacional definida por el constructor (Hernán Sans), no extraída de manual — proxy práctico para 'desde la prueba de magnetos en adelante'"
 
   temp_refrigerante:
     campo_csv: "Coolant Temp (deg F)"
@@ -37,12 +58,22 @@ motor:
   presion_aceite:
     campo_csv: "Oil Press (PSI)"
     unidad: psi
+    es_mandatorio: true
     limites:
       min_por_debajo_3500rpm: 11.6
       normal_por_encima_3500rpm_min: 29
       normal_por_encima_3500rpm_max: 72.5
       max_arranque_frio: 101.5
     fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-5 (valores originales en bar: mín. 0.8 <3500rpm, normal 2.0-5.0 >3500rpm, máx. 7 admisible solo en arranque en frío)"
+    nota: >
+      MANDATORIO — no es un dato informativo. El propio manual del motor le dedica
+      procedimientos de emergencia dedicados: 'Oil pressure below minimum' (en tierra
+      y en vuelo) y 'Oil pressure above permitted range at low ambient temperatures'
+      (Rotax OM 912 Ed.4/Rev.1, Sec. 3.4/3.4.1/3.4.2, pág. 3-4 a 3-5 — PDF p.42-43),
+      con acciones inmediatas (detener motor, reducir potencia, aterrizaje
+      precautorio). Queda en 'pendientes' del motor de comparación únicamente porque
+      el límite es condicional según RPM (no un min/max absoluto), NO porque sea
+      opcional — requiere lógica específica que cruce presión con RPM por fila.
 
   egt:
     campo_csv: ["EGT1 (deg F)", "EGT2 (deg F)", "EGT3 (deg F)", "EGT4 (deg F)"]
