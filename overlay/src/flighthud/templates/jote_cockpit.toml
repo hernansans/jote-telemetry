@@ -1,0 +1,99 @@
+# JOTE LV-X7030 — PFD overlay + Garmin EIS horizontal strip
+# Base: pfd template + custom eis_panel widget at bottom
+
+[canvas]
+width = 1920
+height = 1080
+
+# ── Artificial horizon (PFD style, centre) ───────────────────────────────────
+[[widget]]
+type = "artificial_horizon"
+style = "pfd"
+x = 960
+y = 700
+width = 1180
+height = 700
+pitch_scale = 7.5
+bank_radius = 250
+fill = false
+pitch = "Pitch (deg)"
+roll = "Roll (deg)"
+
+# ── Airspeed tape (left) ─────────────────────────────────────────────────────
+[[widget]]
+type = "tape"
+x = 372
+y = 470
+width = 120
+height = 480
+source = "Indicated Airspeed (kt)"
+pixels_per_unit = 4.4
+big_step = 20
+small_step = 10
+box_side = "right"
+bands = [[33, 100, "#2fb24a"], [100, 120, "#e8c220"], [120, 140, "#d23b3b"]]
+sub_source = "True Airspeed (kt)"
+sub_template = "TAS {value} kt"
+
+# ── Altitude tape (right) ────────────────────────────────────────────────────
+[[widget]]
+type = "tape"
+x = 1428
+y = 470
+width = 140
+height = 480
+source = "Baro Altitude (ft)"
+pixels_per_unit = 0.42
+big_step = 100
+small_step = 20
+box_side = "left"
+
+# ── VSI ──────────────────────────────────────────────────────────────────────
+[[widget]]
+type = "vsi"
+x = 1575
+y = 470
+width = 54
+height = 480
+source = "Vertical Speed (ft/min)"
+max_fpm = 2000
+
+# ── Heading rose (bottom centre) ─────────────────────────────────────────────
+[[widget]]
+type = "heading_rose"
+x = 960
+y = 175
+radius = 155
+source = "GPS Ground Track (deg)"
+label = "TRK"
+aircraft_icon = "A:/Edicion de video/Telemetria/vista superior JOTE.png"
+aircraft_icon_zoom = 0.32
+
+# ── GS/GPS (top left) ────────────────────────────────────────────────────────
+[[widget]]
+type = "metric"
+x = 100
+y = 160
+label = "GS/GPS"
+unit = " kt"
+size = 28
+source = "GPS Ground Speed (kt)"
+
+# ── OAT (debajo de GS/GPS — hora y título removidos) ────────────────────────
+[[widget]]
+type = "readout"
+x = 100
+y = 112
+size = 22
+source = "Outside Air Temp (deg C)"
+template = "OAT {value} °C"
+decimals = 0
+
+# ── EIS panel — columna vertical anclada al margen derecho ───────────────────
+# Cajón (MAP/RPM + barras) arriba, EGT al medio, VOLTS/AMPS/FLAP abajo.
+[[widget]]
+type = "eis_panel"
+x = 1480
+y = 0
+width = 440
+height = 400

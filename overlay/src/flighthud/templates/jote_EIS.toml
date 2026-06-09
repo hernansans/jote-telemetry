@@ -1,0 +1,47 @@
+# JOTE LV-X7030 — EIS compacto + velocímetro + variómetro circulares
+# Pensado para tomas exteriores / sin PFD completo.
+# Layout: columna derecha — dos cuadrantes circulares arriba + EIS panel abajo.
+
+[canvas]
+width = 1920
+height = 1080
+
+# ── Velocímetro circular (IAS) — alineado con MAP ────────────────────────────
+# x=1618 = mismo eje vertical que el dial MAP del eis_panel
+[[widget]]
+type = "dial_gauge"
+x = 1618
+y = 475
+r = 69
+vmin = 0
+vmax = 140
+source = "Indicated Airspeed (kt)"
+label = "IAS"
+unit = " kt"
+bands = [[33, 100, "#2fb24a"], [100, 120, "#e8c220"], [120, 140, "#d23b3b"]]
+
+# ── Variómetro circular (VSI) — alineado con RPM ─────────────────────────────
+# x=1782 = mismo eje vertical que el dial RPM del eis_panel
+# start=270 sweep=180 → -2000 en 6h, 0 en 9h, +2000 en 12h (intuitivo)
+[[widget]]
+type = "dial_gauge"
+x = 1782
+y = 475
+r = 69
+vmin = -2000
+vmax = 2000
+start = 270
+sweep = 180
+source = "Vertical Speed (ft/min)"
+label = "VSI"
+unit = " fpm"
+decimals = 0
+bands = [[-2000, -300, "#d23b3b"], [-300, 300, "#2fb24a"], [300, 2000, "#d23b3b"]]
+
+# ── EIS panel ─────────────────────────────────────────────────────────────────
+[[widget]]
+type = "eis_panel"
+x = 1480
+y = 0
+width = 440
+height = 400

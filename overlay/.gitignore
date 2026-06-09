@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Render output — va a disco A:, nunca al repo
+frames*/
+preview*/
+*.mov
+*.mp4
+*.log
+
+# Telemetría — datos privados de vuelo
+*.csv
+
+# Editor / OS
+.DS_Store
+Thumbs.db
