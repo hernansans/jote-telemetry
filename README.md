@@ -50,13 +50,27 @@ pytest -q                       # tiene que mostrar todos los tests en verde
 
 Los logs CSV del GDU 460 van en `tests/fixtures/` (gitignoreados, no se suben al repo).
 
+## Módulos
+
+### `src/` — análisis de telemetría
+Parser del CSV del GDU 460 + motor de comparación contra límites mandatorios.
+Genera reportes técnicos por vuelo con parámetros fuera de límite, tendencias y alertas CAS.
+
+### `overlay/` — HUD de video
+Fork customizado de [flighthud](https://github.com/jfromaniello/flighthud) que genera un
+overlay de video transparente (ProRes 4444 alpha) a partir del mismo CSV.
+Se compone sobre el video del vuelo en el editor — mismo log, dos usos.
+
+Ver [`overlay/README.md`](overlay/README.md) para instrucciones de render.
+
 ## Roadmap
 
 - [x] Parser de CSV del GDU 460
 - [x] Motor de comparación contra límites (`docs/limites.yaml`)
+- [x] HUD overlay de video (ProRes 4444 alpha) — módulo `overlay/`
 - [ ] Generador de reportes Markdown por vuelo
 - [ ] Comparación entre vuelos / tendencias
-- [ ] Widget web de carga (segunda etapa)
+- [ ] Web app: subir CSV → recibir reporte + overlay por descarga
 - [ ] Seguimiento de horas de motor, vencimientos, gastos operativos, mantenimiento
 
 ## Estructura del repo
@@ -64,6 +78,7 @@ Los logs CSV del GDU 460 van en `tests/fixtures/` (gitignoreados, no se suben al
 ```
 docs/      límites mandatorios (YAML) y contexto del aeródromo — fuente de verdad
 memory/    decisiones, hallazgos recurrentes entre vuelos
+overlay/   HUD de video — fork flighthud con widgets y templates JOTE
 src/       parser, motor de límites, generador de reportes
 tests/     casos de prueba con CSVs de ejemplo
 reports/   reportes generados, uno por vuelo
