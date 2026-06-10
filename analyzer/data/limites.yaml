@@ -1,0 +1,339 @@
+# Límites mandatorios — fuente de verdad para el motor de comparación
+#
+# Cada entrada cita manual + edición/revisión + página/sección (ver `fuente`).
+# `campo_csv` usa el nombre exacto de columna del log GDU 460 (encabezado fila 2 del CSV).
+# Los límites se expresan en la unidad que reporta el CSV para comparar directo;
+# entre paréntesis en `fuente_valor_original` se deja el valor tal como figura en el
+# manual de origen (suele estar en unidades métricas).
+
+motor:
+  rpm:
+    campo_csv: "RPM"
+    unidad: rpm
+    umbral_motor_encendido: 1000   # RPM por encima del cual se considera el motor en marcha;
+                                   # por debajo (apagado/arranque) NO se evalúan presiones/temps
+    limites:
+      ralenti_min: 1400
+      max_continuo: 5500
+      max_despegue_transitorio: 5800   # admisible máx. 5 minutos
+      max_despegue_duracion_s: 300     # 5 min: tiempo acumulado máx en zona de despegue (5500-5800)
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-5"
+    nota: "Manual JOTE rev.1 Sec.2.8 reproduce estos mismos valores; Manual de Ensayos Sec.5.3 indica ralentí real 1750-1800 RPM (más alto que el mínimo del manual del motor)"
+
+  temp_aceite:
+    campo_csv: "Oil Temp (deg F)"
+    unidad: "°F"
+    limites:
+      min_para_alta_potencia: 122   # 50 °C — gate previo a despegue/alta potencia, NO un mínimo continuo
+      normal_min: 194 # 90 °C
+      normal_max: 230 # 110 °C
+      max: 266        # 130 °C
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valores originales en °C: mín. 50, normal 90-110, máx. 130)"
+    nota: >
+      El mínimo de 50°C (122°F) es una condición a cumplir ANTES de aplicar alta
+      potencia (prueba de magnetos / despegue), no un mínimo continuo desde el
+      arranque — durante la puesta en marcha y el rodaje la temperatura sube
+      gradualmente y eso es normal. "Desde la prueba de magnetos" es difícil de
+      delimitar con precisión en la telemetría; en su lugar se usa un proxy
+      operacional definido por el constructor (ver `regla_alta_potencia_sin_temp_operativa`
+      abajo) y [[fases-de-vuelo]].
+
+    regla_alta_potencia_sin_temp_operativa:
+      descripcion: >
+        Alerta si se aplica alta potencia (RPM por encima del umbral) sin haber
+        alcanzado la temperatura de operación normal del aceite. Reemplaza la
+        idea de "detectar la prueba de magnetos" por una condición simple y
+        verificable directamente en el log.
+      umbral_rpm: 3000
+      umbral_temp_operativa: 194   # 90 °C — normal_min de la tabla de arriba
+      campo_csv_rpm: "RPM"
+      campo_csv_temp: "Oil Temp (deg F)"
+      condicion: "RPM > umbral_rpm AND Oil Temp (deg F) < umbral_temp_operativa"
+      fuente: "Regla operacional definida por el constructor (Hernán Sans), no extraída de manual — proxy práctico para 'desde la prueba de magnetos en adelante'"
+
+  temp_refrigerante:
+    campo_csv: "Coolant Temp (deg F)"
+    unidad: "°F"
+    limites:
+      max: 248        # 120 °C — motor con sufijo -01 (912 ULS2-01), refrigerante convencional
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valor original: máx. 120 °C, tabla 'Conventional coolant — Applicable for engine S/N with Suffix -01')"
+
+  presion_aceite:
+    campo_csv: "Oil Press (PSI)"
+    unidad: psi
+    es_mandatorio: true
+    limites:
+      min_por_debajo_3500rpm: 11.6
+      normal_por_encima_3500rpm_min: 29
+      normal_por_encima_3500rpm_max: 72.5
+      max_arranque_frio: 101.5
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-5 (valores originales en bar: mín. 0.8 <3500rpm, normal 2.0-5.0 >3500rpm, máx. 7 admisible solo en arranque en frío)"
+    nota: >
+      MANDATORIO — no es un dato informativo. El propio manual del motor le dedica
+      procedimientos de emergencia dedicados: 'Oil pressure below minimum' (en tierra
+      y en vuelo) y 'Oil pressure above permitted range at low ambient temperatures'
+      (Rotax OM 912 Ed.4/Rev.1, Sec. 3.4/3.4.1/3.4.2, pág. 3-4 a 3-5 — PDF p.42-43),
+      con acciones inmediatas (detener motor, reducir potencia, aterrizaje
+      precautorio). Queda en 'pendientes' del motor de comparación únicamente porque
+      el límite es condicional según RPM (no un min/max absoluto), NO porque sea
+      opcional — requiere lógica específica que cruce presión con RPM por fila.
+
+  egt:
+    campo_csv: ["EGT1 (deg F)", "EGT2 (deg F)", "EGT3 (deg F)", "EGT4 (deg F)"]
+    unidad: "°F"
+    limites:
+      max: 1616       # 880 °C
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-6 (valor original: máx. 880 °C)"
+    diagnostico:
+      alta_potencia_rpm: 4000          # RPM por encima del cual comparar EGTs (régimen estable)
+      spread_atencion_f: 250           # dispersión media (máx−mín entre cilindros) que dispara atención
+      desviacion_cilindro_f: 150       # desvío de un cilindro respecto de la media del grupo
+      nota: >
+        Rotax NO publica un límite de dispersión entre cilindros; es una métrica de
+        DIAGNÓSTICO/TENDENCIA. El motor es carburado, por lo que cierta dispersión (100-180 °F)
+        es normal. Un cilindro que se aparta del grupo, o un aumento de dispersión entre vuelos,
+        puede indicar problema (bujía, carburación, admisión, válvula). Umbrales conservadores
+        para no marcar falsos positivos.
+
+  presion_combustible:
+    campo_csv: "Fuel Press (PSI)"
+    unidad: psi
+    limites:
+      min: 2.2
+      max: 5.8
+    min_requiere_bomba_electrica: true
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1, Sec. 2.2 Operating limits (912S/ULS), pág. 2-7 (valores originales en bar: mín. 0.15, máx. 0.4); Manual JOTE rev.1 Sec.2.8 reproduce 2.2-5.8 psi"
+    nota: >
+      El sistema tiene bomba mecánica + bomba eléctrica auxiliar, ésta OBLIGATORIA en
+      despegue/aterrizaje (Manual JOTE rev.1 Sec.2.9, pág. 13). En el rodaje/arranque la
+      eléctrica suele estar apagada y la bomba mecánica sola da presión marginal en ralentí,
+      por lo que caídas por debajo del mínimo en esa etapa son TRANSITORIOS esperados, no
+      violaciones. Con `min_requiere_bomba_electrica: true`, el mínimo de 2.2 psi se exige solo
+      dentro de la ventana operacional (desde el despegue hasta el aterrizaje); fuera de ella
+      las caídas se reportan como informativo. El máximo (5.8 psi) se controla siempre.
+
+  flujo_combustible:
+    campo_csv: "Fuel Flow (gal/hour)"
+    unidad: "gal/h"
+    limites: {}
+    nota: "registro informativo — sin límite mandatorio publicado; usar para tendencias y consumo específico (Manual de Ensayos PERF08)"
+
+  alternador:
+    campo_csv_voltaje: "Volts"
+    campo_csv_amperaje: "Alt Amps"
+    unidad_voltaje: "V"
+    unidad_amperaje: "A"
+    limites: {}
+    nota: "Manual JOTE rev.1 Sec.2.10 indica monitorear avisos VP-X y amperajes asociados, sin publicar límites numéricos de voltaje/amperaje — registrar para tendencias y comparar contra avisos CAS/VP-X del vuelo"
+    fuente: "Manual JOTE rev.1, Sección 2.10 — Limitaciones eléctricas y VP-X, pág. 13"
+
+  map:
+    campo_csv: "Manifold Press (inch Hg)"
+    unidad: "inch Hg"
+    nota: "comparar contra curva teórica MAP vs RPM del manual del motor, no contra un único límite — pendiente de extracción de la curva (Rotax OM 912, sección de performance)"
+    fuente: "Rotax Operator Manual 912 Series Ed.4/Rev.1 — TODO: localizar curva MAP vs RPM"
+    diagnostico:
+      alta_potencia_rpm: 4500          # régimen donde se espera MAP cercana a admisión plena
+      map_baja_inhg: 18                # MAP por debajo de esto a RPM alto = posible anomalía
+      nota: >
+        Heurística diagnóstica, NO un límite de manual: RPM alto con MAP anormalmente baja puede
+        indicar pérdida de potencia o problema de admisión (filtro, fuga, mariposa). La comparación
+        real contra la curva teórica MAP vs RPM queda PENDIENTE de extraer del Rotax OM 912.
+
+vuelo:
+  ias:
+    campo_csv: "Indicated Airspeed (kt)"
+    unidad: kt
+    limites:
+      vne: 113
+      vno: 91
+      va: 84
+      vfe: 65
+      vs: 34
+      vso: 28
+    fuente: "Manual JOTE rev.1, Sección 2.2 — Limitaciones de velocidad (KIAS), pág. 11"
+
+  velocidad_suelo:
+    campo_csv: "GPS Ground Speed (kt)"
+    unidad: kt
+    limites: {}
+    nota: "registro informativo — sin límite mandatorio; útil para comparar contra IAS/TAS y viento"
+
+  agl:
+    campo_csv_base: "Pressure Altitude (ft)"
+    campo_csv_g3x_agl: "Height Above Ground (ft)"
+    unidad: ft
+    nota: >
+      AGL real = Pressure Altitude − elevación del aeródromo (1.748 ft), ajustada por
+      cabecera en uso (desnivel de 48 ft) — ver docs/aerodromo.md. No usar la columna
+      'Height Above Ground (ft)' del G3X (deriva de altitud GPS/radar) como referencia
+      del análisis; se registra solo para comparación/control cruzado.
+
+  tasa_vertical:
+    campo_csv: "Vertical Speed (ft/min)"
+    unidad: "ft/min"
+    limites: {}
+    nota: "registro informativo — usar para tendencias de ascenso/descenso (PERF03/PERF05)"
+
+  vlof:
+    campo_csv: "Indicated Airspeed (kt)"
+    unidad: kt
+    contexto: >
+      Determinación de VLOF (Fase 02 / PERF01): velocidad mínima de separación del suelo,
+      medida en "saltos de pulga" tras rodajes progresivos a ≈1.05/1.10/1.15 × Vs1 estimada.
+      Se requieren ≥3 valores consistentes de KIAS en separación. Vr provisional = VLOF +3 a +5 kt.
+    fuente: "Manual de Ensayos en Vuelo JOTE v3, Sección 8.4/9.2 (PERF01), pág. 15 y 18"
+
+  flaps:
+    campo_csv: "Flap Position"
+    delta_extendido: 2     # desviación (cuentas del sensor crudo) sobre el valor retraído inferido
+    nota: >
+      'Flap Position' es un valor CRUDO del sensor (~13-17), no el % del manual (0/20/40/60/100%)
+      y no hay tabla de calibración. El análisis NO asume ni gatea: INFIERE 'flaps arriba' como el
+      valor más frecuente del vuelo (la aeronave pasa la mayor parte retraída y vuela por encima de
+      VFE con ese valor, lo que confirma que es 'arriba') y marca 'flaps extendidos' cuando el sensor
+      se aparta más que `delta_extendido`. Es una inferencia data-driven que se reporta para validar;
+      habilita los chequeos de VFE y de la envolvente de carga con flaps.
+
+  factor_carga:
+    campo_csv: "Normal Acceleration (G)"
+    campo_csv_flaps: "Flap Position"
+    unidad: g
+    limites:
+      flaps_arriba_pos: 4.0
+      flaps_arriba_neg: -2.0
+      flaps_abajo_pos: 2.0
+      flaps_abajo_neg: 0.0
+    fuente: "Manual JOTE rev.1, Sección 2.5 — Factores de carga, pág. 12"
+    nota: >
+      Aeronave NO acrobática; debe operarse únicamente dentro de estos límites. El límite
+      depende de la configuración de flaps: +4.0/−2.0 g con flaps arriba, +2.0/0.0 g con
+      flaps abajo. La envolvente estructural (flaps arriba, ±4/−2) se verifica siempre y un
+      exceso es violación inequívoca. La banda más estricta (>+2.0 / <0.0 g) se evalúa cuando
+      los flaps aparecen extendidos según la config. inferida del sensor (ver `vuelo.flaps`).
+
+  aceleracion_lateral:
+    campo_csv: "Lateral Acceleration (G)"
+    unidad: g
+    limites: {}
+    nota: "Registro informativo — coordinación del vuelo (derrape/resbale); sin límite mandatorio publicado."
+
+  maniobra:
+    alabeo:
+      campo_csv: "Roll (deg)"
+      unidad: deg
+      limites:
+        max_abs: 60
+      fuente: "Manual JOTE rev.1, Sección 2.6 — Maniobras prohibidas, pág. 12 ('Alabeos mayores a 60°')"
+    cabeceo:
+      campo_csv: "Pitch (deg)"
+      unidad: deg
+      limites:
+        max_abs: 30
+      fuente: "Manual JOTE rev.1, Sección 2.6 — Maniobras prohibidas, pág. 12 ('Actitudes de cabeceo mayores a 30°')"
+
+  viento_cruzado:
+    campo_csv_velocidad: "Wind Speed (kt)"
+    campo_csv_direccion: "Wind Direction (deg)"
+    campo_csv_track: "GPS Ground Track (deg)"
+    limite_kt: 15      # @ 90°, demostrado en ensayos (despegue y aterrizaje)
+    fuente: "Manual JOTE rev.1, Sección 2.7 — Viento cruzado máximo demostrado, pág. 12 (15 kt @ 90°)"
+    nota: >
+      No es limitación estructural sino recomendación operacional basada en ensayos. El log no
+      registra el rumbo de pista ni siempre el viento durante la carrera (el G3X computa viento
+      con el avión en movimiento/aire). Se ESTIMA el rumbo de pista con el track medio (true) de
+      las carreras de despegue/aterrizaje y se calcula la componente cruzada en las ventanas de
+      despegue y aterrizaje; se asume el viento en el mismo norte que el track (error ~variación
+      magnética). Resultado a validar.
+
+  referenciales:
+    nota: "Velocidades GUÍA (no límites mandatorios) para contexto de ascenso/aproximación."
+    vx_kt: [48, 50]      # mejor ángulo de ascenso
+    vy_kt: [60, 70]      # mejor razón de ascenso
+    vapp_kt: [57, 61]    # aproximación con flaps
+    vref_kt: 56          # final con flaps completos
+    vglide_kt: 56        # mejor planeo
+    fuente: "Manual JOTE rev.1, Sección 2.2 — Limitaciones de velocidad, pág. 11"
+
+avionica:
+  alertas_cas:
+    campo_csv: "CAS Alert"
+    nota: "texto crudo del log, segundo a segundo — acumular ocurrencias y duración por vuelo, agrupar por criticidad (warning/caution/advisory)"
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 3.7 / 'CAS Messages', pág. ~349 (PDF p.635)"
+
+  hdg_miscomp:
+    campo_csv: "AHRS/Mag 1 Status"
+    nota: >
+      El G3X anuncia discrepancias entre unidades ADAHRS/SFD como mensaje CAS 'MISCOMP'
+      (miscompare) en la Comparator Window; el umbral numérico de disparo se define en
+      configuración de instalación y no está publicado como valor único en el Pilot's Guide.
+      Tratamiento: registrar cada ocurrencia del mensaje CAS de miscompare y su duración,
+      no como cruce de un umbral numérico fijo.
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 'ADAHRS LRU Comparison Alerts' / 'SFD Comparison Alerts', pág. ~375-376 (PDF p.401-402)"
+
+  diferencia_altimetrica_g5_g3x:
+    campo_csv_g3x: "Pressure Altitude (ft)"
+    campo_csv_g5: null   # TODO: el log de PFD1 no trae canal del G5 — confirmar si se exporta en log separado o vía RS-232/comparator
+    unidad: ft
+    limites: {}
+    nota: >
+      Mismo mecanismo que hdg_miscomp: el G3X compara fuentes redundantes y anuncia
+      'MISCOMP'/'NO COMP' sin publicar un umbral numérico único en el Pilot's Guide.
+      Pendiente: confirmar si el dato de altitud del G5 standby queda registrado en el
+      log del GDU 460 o si debe tomarse de otra fuente para la comparación.
+    fuente: "G3X Touch Pilot's Guide (190-01754-00 Rev.Z), Sección 'SFD Comparison Alerts', pág. ~375-376 (PDF p.401-402)"
+
+# ---------------------------------------------------------------------------
+# Límites mandatorios NO monitoreables desde el log (telemetría no los registra).
+# Se documentan acá para que la fuente de verdad esté completa; el motor de
+# comparación no los chequea, pero el reporte debe listarlos como "verificar en
+# planificación / inspección previa".
+# ---------------------------------------------------------------------------
+planificacion:
+  peso:
+    no_monitoreable: true
+    limites:
+      max_rampa_kg: 600
+      max_despegue_kg: 600
+      max_aterrizaje_kg: 600
+      vacio_kg: 350
+      carga_util_kg: 250
+      equipaje_total_kg: 32
+      equipaje_adelante_est3_kg: 21
+      equipaje_atras_est3_kg: 11
+    fuente: "Manual JOTE rev.1, Sección 2.3 — Limitaciones de peso, pág. 11"
+
+  centro_gravedad:
+    no_monitoreable: true
+    limites:
+      cg_delantero_cm_detras_datum: 72
+      cg_trasero_cm_detras_datum: 95
+    nota: "Datum: plano vertical en la cara frontal del parallama."
+    fuente: "Manual JOTE rev.1, Sección 2.4 — Limitaciones del CG, pág. 12"
+
+  puertas:
+    no_monitoreable: true
+    nota: >
+      Vuelo con puertas abiertas hasta 85 kt; PROHIBIDO abrir puertas por encima de 56 kt;
+      performance reducida con puertas abiertas o retiradas. El log no registra estado de puertas.
+    fuente: "Manual JOTE rev.1, Sección 2.11 — Limitaciones de configuración (Puertas), pág. 13"
+
+  sistema_combustible:
+    no_monitoreable: true
+    limites:
+      tanques_alares_l: 90      # 45 L × 2
+      tanque_colector_l: 15
+      total_l: 105
+      utilizable_l: 98
+    nota: >
+      Bomba mecánica + bomba eléctrica auxiliar (obligatoria en despegue/aterrizaje). El log no
+      registra cantidad de combustible (sí el flujo: ver `motor.flujo_combustible`, que permite
+      estimar el consumido por integración).
+    fuente: "Manual JOTE rev.1, Sección 2.9 — Limitaciones del sistema de combustible, pág. 13"
+
+  ocupantes_operacion:
+    no_monitoreable: true
+    nota: >
+      Máximo 2 ocupantes. Operación comercial prohibida; prohibido transporte de carga remunerada
+      o instrucción paga (aeronave Experimental).
+    fuente: "Manual JOTE rev.1, Sección 2.12 — Limitaciones de pasajeros y operación, pág. 14"

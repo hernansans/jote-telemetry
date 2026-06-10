@@ -52,9 +52,15 @@ Los logs CSV del GDU 460 van en `tests/fixtures/` (gitignoreados, no se suben al
 
 ## Módulos
 
-### `src/` — análisis de telemetría
-Parser del CSV del GDU 460 + motor de comparación contra límites mandatorios.
-Genera reportes técnicos por vuelo con parámetros fuera de límite, tendencias y alertas CAS.
+### `analyzer/` — análisis post-vuelo híbrido (Python + LLM)
+Motor "v2" integrado desde [jote-analyzer](https://github.com/jfromaniello/jote-analyzer):
+fases de vuelo, límites condicionales (presión de aceite por RPM, EGT/MAP, factor de carga,
+viento cruzado, flaps inferidos) y reporte narrativo generado por LLM (OpenAI), con gráficos
+y exportación a PDF. Ver [`analyzer/README.md`](analyzer/README.md).
+
+### `src/` — análisis de telemetría (v1, legado)
+Parser del CSV del GDU 460 + motor de comparación simple contra límites mandatorios.
+Se mantiene por ahora como referencia; `analyzer/` lo supera en alcance.
 
 ### `overlay/` — HUD de video
 Fork customizado de [flighthud](https://github.com/jfromaniello/flighthud) que genera un
@@ -68,20 +74,21 @@ Ver [`overlay/README.md`](overlay/README.md) para instrucciones de render.
 - [x] Parser de CSV del GDU 460
 - [x] Motor de comparación contra límites (`docs/limites.yaml`)
 - [x] HUD overlay de video (ProRes 4444 alpha) — módulo `overlay/`
-- [ ] Generador de reportes Markdown por vuelo
-- [ ] Comparación entre vuelos / tendencias
+- [x] Generador de reportes Markdown por vuelo (LLM) — módulo `analyzer/`
+- [x] Comparación entre vuelos / tendencias — módulo `analyzer/` (multi-log)
 - [ ] Web app: subir CSV → recibir reporte + overlay por descarga
 - [ ] Seguimiento de horas de motor, vencimientos, gastos operativos, mantenimiento
 
 ## Estructura del repo
 
 ```
-docs/      límites mandatorios (YAML) y contexto del aeródromo — fuente de verdad
+analyzer/  análisis post-vuelo híbrido (Python + LLM) — fases, límites condicionales, reportes
+docs/      límites mandatorios (YAML, v1) y contexto del aeródromo — fuente de verdad legado
 memory/    decisiones, hallazgos recurrentes entre vuelos
 overlay/   HUD de video — fork flighthud con widgets y templates JOTE
-src/       parser, motor de límites, generador de reportes
+src/       parser y motor de límites v1 (legado, ver analyzer/)
 tests/     casos de prueba con CSVs de ejemplo
-reports/   reportes generados, uno por vuelo
+reports/   reportes generados por src/, uno por vuelo
 ```
 
 ## Flujo de trabajo
