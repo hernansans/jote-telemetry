@@ -12,3 +12,14 @@ data/raw/*.csv
 # fixtures de log reales (datos de vuelo, no van al repo público)
 tests/fixtures/*
 !tests/fixtures/log_sintetico_ejemplo.csv
+
+# analyzer/ (jote-analyzer integrado) — secrets, data de vuelo y reportes generados
+analyzer/.env
+analyzer/*.csv
+analyzer/*.pdf
+analyzer/data/manuals/
+analyzer/logs/
+analyzer/reports/*
+!analyzer/reports/.gitkeep
+analyzer/.venv/
+analyzer/uv.lock

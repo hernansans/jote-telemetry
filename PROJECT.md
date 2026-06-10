@@ -5,10 +5,10 @@ Garmin G3X Touch), en ensayos en vuelo en Aeródromo Alta Gracia, Córdoba.
 
 ## Antes de analizar un log o escribir código
 
-1. Leé `docs/limites.yaml` — límites mandatorios extraídos de los manuales (Rotax OM 912 Ed.4,
-   Manual JOTE rev.1, G3X Touch Pilot's Guide, Manual de Ensayos en Vuelo).
-2. Leé `docs/aerodromo.md` — contexto de Alta Gracia (elevación, AGL sobre Pressure Altitude,
-   desnivel de pista).
+1. Para análisis de vuelo, usar `analyzer/` (motor v2, híbrido Python+LLM) — ver
+   `analyzer/README.md`. `analyzer/data/limites.yaml` es la versión enriquecida y vigente.
+2. `docs/limites.yaml` y `docs/aerodromo.md` son la versión v1/legado (referencia de
+   `src/`); `analyzer/data/` es la fuente de verdad actual.
 3. Leé `memory/MEMORY.md` — decisiones previas, hallazgos recurrentes entre vuelos, convenciones.
 
 ## Reglas del proyecto
@@ -22,12 +22,28 @@ Garmin G3X Touch), en ensayos en vuelo en Aeródromo Alta Gracia, Córdoba.
 
 ## Estructura
 
-- `src/` — parser de CSV del GDU 460, motor de comparación, generador de reportes
-- `docs/` — límites estructurados y contexto del aeródromo (fuente de verdad para el análisis)
+- `analyzer/` — motor v2: fases de vuelo, límites condicionales, reporte LLM, gráficos, PDF
+- `src/` — parser de CSV del GDU 460, motor de comparación v1 (legado)
+- `docs/` — límites estructurados v1 y contexto del aeródromo (legado)
 - `memory/` — qué aprendimos vuelo a vuelo, decisiones de diseño
 - `tests/` — casos con CSVs de ejemplo
-- `reports/` — reportes generados, uno por vuelo
+- `reports/` — reportes generados por `src/`, uno por vuelo
 - `overlay/` — HUD de video transparente (ProRes 4444 alpha) generado desde el mismo CSV
+
+## Módulo analyzer
+
+`analyzer/` es el motor de análisis post-vuelo integrado desde
+[jote-analyzer](https://github.com/jfromaniello/jote-analyzer) (enfoque híbrido
+Python determinístico + LLM narrativo). Antes de usarlo:
+
+- Setup: `cd analyzer && uv sync && cp .env.example .env` y completar `OPENAI_KEY` a mano
+  en el `.env` local (gitignored). **Nunca pegar la key en el chat ni commitearla.**
+- Uso: `uv run jote-analyzer --data data --log /ruta/al/log.csv` (agregar `--no-llm` para
+  solo el análisis determinístico, `--pdf` para exportar PDF).
+- `analyzer/data/limites.yaml` es la fuente de verdad vigente de límites (enriquecida desde
+  `docs/limites.yaml` con contenido de los manuales). Cualquier corrección de límites debería
+  aplicarse ahí (y considerar sincronizar con `docs/limites.yaml` si se sigue usando `src/`).
+- Detalle completo en `analyzer/README.md`.
 
 ## Módulo overlay
 

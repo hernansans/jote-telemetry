@@ -1,0 +1,87 @@
+/* Estilo para los reportes de engine-analyzer (HTML -> PDF con weasyprint) */
+
+@page {
+  size: A4 landscape;          /* apaisado: más ancho para las tablas */
+  margin: 1.5cm;
+  @bottom-right {
+    content: "Pág. " counter(page) " / " counter(pages);
+    font-size: 8pt;
+    color: #888;
+  }
+}
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.45;
+  color: #1a1a1a;
+}
+
+h1 { font-size: 19pt; border-bottom: 2px solid #333; padding-bottom: .2em; }
+h2 { font-size: 14pt; margin-top: 1.4em; color: #0b3d6b; border-bottom: 1px solid #ccc; padding-bottom: .15em; }
+h3 { font-size: 11.5pt; color: #0b3d6b; }
+
+/* Cada sección (## / h2) arranca en una página nueva.
+   Excepción: la primera sección queda junto al título del reporte (página 1). */
+h2 { page-break-before: always; }
+h1 + h2 { page-break-before: avoid; }
+h2 { page-break-after: avoid; }   /* el título no queda huérfano al pie de la página */
+
+/* --- Tablas: la clave para que no colapsen --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;          /* reparte el ancho en vez de dárselo todo a una columna */
+  margin: 1em 0;
+  font-size: 8.5pt;             /* las tablas, un punto más chicas que el cuerpo */
+}
+
+th, td {
+  border: 1px solid #bbb;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: top;
+  word-wrap: break-word;        /* corta palabras larguísimas (URLs, códigos) */
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+th {
+  background: #0b3d6b;
+  color: #fff;
+  font-weight: 600;
+}
+
+tr:nth-child(even) td { background: #f3f6fa; }
+
+/* Evita que una fila se parta entre páginas */
+tr { page-break-inside: avoid; }
+
+code, pre {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-size: 8.5pt;
+}
+pre {
+  background: #f5f5f5;
+  padding: .6em;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+a { color: #0b3d6b; }
+
+/* --- Imágenes (gráficos): que entren completas en la página landscape --- */
+img {
+  display: block;
+  margin: 0.4em auto;
+  max-width: 100%;
+  /* alto útil de A4 landscape (≈18cm) menos el título+intro del anexo (~2cm):
+     limitar para que título y strip chart entren juntos en una sola página */
+  max-height: 14cm;
+  page-break-inside: avoid;
+}
+
+/* El bloque del anexo (título + intro + gráfico) viaja junto, sin partirse entre páginas */
+.anexo-bloque { page-break-inside: avoid; }
+.anexo-bloque h2 { margin-top: 0; }
