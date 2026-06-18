@@ -14,6 +14,8 @@ NUMERIC_COLUMNS = [
     "GPS Altitude (ft)",
     "Baro Altitude (ft)",
     "Vertical Speed (ft/min)",
+    "Wind Speed (kt)",
+    "Wind Direction (deg)",
     "Indicated Airspeed (kt)",
     "True Airspeed (kt)",
     "Magnetic Heading (deg)",
