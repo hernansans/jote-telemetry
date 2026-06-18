@@ -54,5 +54,5 @@ Antes de trabajar en él, leé `overlay/README.md` para el setup y comandos de r
 - Todo output (frames, .mov, logs) va a disco A: — nunca al repo ni a C:
 - Los CSV de telemetría son datos privados — no se commitean
 - Render completo: `-j 6` workers (más causa MemoryError por page file en C:)
-- Templates activos: `jote_cockpit` (PFD completo), `jote_EIS` (EIS + IAS + VSI)
-- Widgets custom en `overlay/src/flighthud/widgets/eis.py`: `eis_panel`, `dial_gauge`
+- Templates activos: `jote_cockpit` (PFD completo), `jote_EIS` (EIS + IAS + VSI), `jote_info` (panel simple arriba a la derecha)
+- Widgets custom en `overlay/src/flighthud/widgets/eis.py`: `eis_panel`, `dial_gauge`; en `widgets/info_panel.py`: `info_panel`
