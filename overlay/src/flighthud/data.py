@@ -156,8 +156,12 @@ class FrameData:
         idx1 = idx0 + 1
         self.frac = t_log - idx0
 
-        idx0 = max(0, idx0)
-        idx1 = min(idx1, len(df) - 1)
+        # Clamp ambos índices al rango válido. Si el clip se extiende más allá del
+        # final del log (offset + duración mayor que el largo grabado), idx0 e idx1
+        # quedan en la última muestra y el cuadro se "congela" en vez de crashear.
+        last = len(df) - 1
+        idx0 = min(max(0, idx0), last)
+        idx1 = min(max(0, idx1), last)
 
         self.row0 = df.iloc[idx0]
         self.row1 = df.iloc[idx1]
