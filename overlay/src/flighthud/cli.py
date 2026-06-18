@@ -10,6 +10,11 @@ from .pipeline import generate
 from .scene import build_scene, load_template
 
 DEFAULT_FPS = 30
+# Frames únicos renderizados por segundo (ffmpeg duplica hasta --fps en la salida).
+# 10 es un default sensible para TODOS los templates: divide exacto a 30 (cada frame
+# ×3, sin judder), rinde ~3× menos renders, y queda suave incluso con agujas/horizonte
+# en movimiento. Para un panel de solo texto podés bajarlo (--render-fps 5).
+DEFAULT_RENDER_FPS = 10
 DEFAULT_DURATION_SECONDS = 295
 DEFAULT_OFFSET_SECONDS = 331
 
@@ -18,6 +23,12 @@ class HorizonStyle(str, Enum):
     glass = "glass"
     minimal = "minimal"
     classic = "classic"
+
+
+class Codec(str, Enum):
+    prores4444 = "prores4444"
+    qtrle = "qtrle"
+    vp9 = "vp9"
 
 app = typer.Typer(
     add_completion=False,
@@ -46,7 +57,16 @@ def run(
         "--template",
         help="Built-in template name (default, minimal) or a path to a .toml template.",
     ),
-    fps: int = typer.Option(DEFAULT_FPS, "--fps", help="Frames per second."),
+    fps: int = typer.Option(DEFAULT_FPS, "--fps", help="Output video frame rate."),
+    render_fps: int = typer.Option(
+        DEFAULT_RENDER_FPS,
+        "--render-fps",
+        help=(
+            "Unique frames rendered per second. Más bajo = más rápido; ffmpeg duplica "
+            "frames hasta --fps en la salida. Para un panel de solo texto 4–6 alcanza; "
+            "subilo (p.ej. --render-fps 30) para máxima fluidez en agujas/horizonte."
+        ),
+    ),
     duration: float = typer.Option(
         DEFAULT_DURATION_SECONDS, "-d", "--duration", help="Clip duration in seconds."
     ),
@@ -70,6 +90,15 @@ def run(
     jobs: Optional[int] = typer.Option(
         None, "-j", "--jobs", help="Parallel worker processes (default: CPU count)."
     ),
+    codec: Optional[Codec] = typer.Option(
+        None,
+        "--codec",
+        help=(
+            "Video codec for .mov/.webm output. Default by extension: .mov=prores4444 "
+            "(import confiable en DaVinci Resolve), .webm=vp9. qtrle es más rápido pero "
+            "Resolve no lo importa — usalo solo para destinos no-Resolve."
+        ),
+    ),
 ):
     """Render the HUD overlay."""
     df = load_garmin_log(str(csv))
@@ -89,6 +118,8 @@ def run(
         offset=offset,
         duration_seconds=duration,
         jobs=jobs or os.cpu_count() or 1,
+        codec=codec.value if codec else None,
+        render_fps=render_fps,
     )
 
 
