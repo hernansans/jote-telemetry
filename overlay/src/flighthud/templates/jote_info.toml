@@ -1,0 +1,36 @@
+# JOTE LV-X7030 — panel de telemetría simple (arriba a la derecha)
+# Réplica del overlay "simple" de joseflys /replay, con la paleta monocromática
+# del JOTE (blanco / gris / negro) para acompañar el esquema del avión.
+#
+# Render:
+#   uv run flighthud log.csv -o frames -t jote_info -j 6
+
+[canvas]
+width = 1920
+height = 1080
+
+# x = 1670 (1920 - 230 ancho - 20 margen) ; y = 1060 (borde superior, 20 del top)
+[[widget]]
+type = "info_panel"
+x = 1670
+y = 1060
+width = 230
+
+# ── Paleta JOTE (blanco/gris/negro) ─────────────────────────────────────────
+# RGBA en 0–1. Quitá estas líneas para volver a la paleta slate de joseflys.
+bg_color     = [0.0, 0.0, 0.0, 0.60]   # panel negro translúcido
+border_color = [1.0, 1.0, 1.0, 0.35]   # borde blanco sutil
+label_color  = [0.72, 0.72, 0.72, 1.0] # etiquetas gris claro
+value_color  = "white"                  # valores blancos
+
+# ── Filas ───────────────────────────────────────────────────────────────────
+# Si se omite `rows`, el default es GS / ALT (baro) / V/S / TRACK / WIND.
+# Para personalizar, descomentar y editar (ver tabla de flags en overlay/README.md):
+#
+# rows = [
+#   { label = "GS",    source = "GPS Ground Speed (kt)",   unit = " KT" },
+#   { label = "ALT",   source = "Baro Altitude (ft)",      unit = " ft",  thousands = true },
+#   { label = "V/S",   source = "Vertical Speed (ft/min)", unit = " fpm", signed = true },
+#   { label = "TRACK", source = "GPS Ground Track (deg)",  unit = "°", angular = true, pad3 = true },
+#   { label = "WIND",  kind = "wind" },
+# ]
